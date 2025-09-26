@@ -1,0 +1,48 @@
+# clusters/on-premises/minio/tenant/tenant.yaml
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: minio-datalake
+  namespace: minio-tenant # Namespace de destino
+spec:
+  # Referencia o secret com as credenciais raiz
+  credsSecret:
+    name: minio-tenant-credentials
+  # Configuração de alta disponibilidade: 4 servidores com 4 volumes cada
+  pools:
+  - servers: 4
+    volumesPerServer: 4
+    # Solicita 1Ti de armazenamento por volume. Total = 4x4x1Ti = 16Ti
+    volumeClaimTemplate:
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Ti
+        # Especifique a StorageClass de alta performance aqui!
+        storageClassName: your-fast-storage-class
+    resources:
+      requests:
+        memory: "8Gi"
+        cpu: "2000m"
+  # Expor o console e a API do MinIO
+  exposeServices:
+    api:
+      # Use LoadBalancer ou Ingress
+      service:
+        type: LoadBalancer
+    console:
+      service:
+        type: LoadBalancer
+  # Habilita o TLS automático gerenciado pelo Kubernetes
+  requestAutoCert: true
+  # Configurações de segurança e monitoramento
+  features:
+    bucketDNS: false
+  env:
+    - name: MINIO_PROMETHEUS_AUTH_TYPE
+      value: "public"
+

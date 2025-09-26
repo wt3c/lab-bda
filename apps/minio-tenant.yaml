@@ -1,0 +1,22 @@
+# apps/minio-tenant.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio-tenant
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'URL_DO_SEU_REPOSITORIO_GITOPS' # Altere para o seu repo
+    targetRevision: HEAD
+    path: clusters/on-premises/minio/tenant # Caminho para os manifestos do tenant
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: minio-tenant # Namespace onde o tenant será criado
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+
